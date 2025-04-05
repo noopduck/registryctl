@@ -1,0 +1,112 @@
+#!/bin/bash
+
+#
+# A script to manage the content of docker registry
+#
+
+declare USERNAME
+declare PASSWORD
+declare HOST
+declare PORT
+declare PROJECTNAME
+declare TAG
+
+function help {
+  echo "1. List catalog of registry"
+  echo "2. List tags of project inside registry"
+  echo "3. List manifest digests of projects"
+  echo "4. Delete tag"
+  echo "5. Quit"
+  echo ""
+}
+
+function listCatalog {
+  curl --silent -X GET -u $USERNAME:$PASSWORD http://$HOST:$PORT/v2/_catalog | python3 -m json.tool
+
+  funloop
+}
+
+function listTags {
+
+  echo -n "Enter the project name: "
+  read PROJECTNAME
+
+  curl --silent -X GET -u $USERNAME:$PASSWORD http://$HOST:$PORT/v2/$PROJECTNAME/tags/list | python3 -m json.tool
+
+  funloop
+}
+
+function listProjectDigest {
+
+  echo -n "Enter the project name: "
+  read PROJECTNAME
+
+  echo -n "Enter the projects tag: "
+  read TAG
+
+  curl --silent -s -X GET \
+    -u $USERNAME:$PASSWORD \
+    http://$HOST:$PORT/v2/$PROJECTNAME/manifests/$TAG \
+    -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+    -H 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
+    -H 'Accept: application/vnd.oci.image.index.v1+json' | python3 -m json.tool
+
+  funloop
+}
+
+function deleteProjectDigest {
+
+  echo -n "Enter the project name: "
+  read PROJECTNAME
+
+  echo -n "Enter the projects tag: "
+  read TAG
+
+  curl --silent -s -X DELETE -u $USERNAME:$PASSWORD http://$HOST:$PORT/v2/$PROJECTNAME/manifests/$TAG
+
+  funloop
+}
+
+function funloop {
+  help
+  echo -n "Enter option: "
+  read OPTION
+
+  case $OPTION in
+  1)
+    listCatalog
+    ;;
+  2)
+    listTags
+    ;;
+  3)
+    listProjectDigest
+    ;;
+  4)
+    deleteProjectDigest
+    ;;
+  5)
+    exit 0
+    ;;
+  *)
+    echo "Undefined function"
+    ;;
+  esac
+
+}
+
+echo -n "Enter the registry hostname: "
+read HOST
+
+echo -n "Enter the registry host port: "
+read PORT
+
+echo -n "Enter username: "
+read USERNAME
+
+echo -n "Enter password: "
+read -s PASSWORD
+
+echo ""
+
+funloop
