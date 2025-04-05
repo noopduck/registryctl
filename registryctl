@@ -16,8 +16,27 @@ function help {
   echo "2. List tags of project inside registry"
   echo "3. List manifest digests of projects"
   echo "4. Delete tag"
-  echo "5. Quit"
+  echo "5. Login"
+  echo "6. Quit"
   echo ""
+}
+
+function login {
+
+  echo -n "Enter the registry hostname: "
+  read HOST
+
+  echo -n "Enter the registry host port: "
+  read PORT
+
+  echo -n "Enter username: "
+  read USERNAME
+
+  echo -n "Enter password: "
+  read -s PASSWORD
+
+  funloop
+
 }
 
 function listCatalog {
@@ -86,6 +105,9 @@ function funloop {
     deleteProjectDigest
     ;;
   5)
+    login
+    ;;
+  6)
     exit 0
     ;;
   *)
@@ -95,17 +117,7 @@ function funloop {
 
 }
 
-echo -n "Enter the registry hostname: "
-read HOST
-
-echo -n "Enter the registry host port: "
-read PORT
-
-echo -n "Enter username: "
-read USERNAME
-
-echo -n "Enter password: "
-read -s PASSWORD
+login
 
 echo ""
 
